@@ -1,0 +1,137 @@
+---
+interface Props {
+  componentId: 'and-gate' | 'xor-gate' | 'rs-nor-latch';
+  title: string;
+}
+
+const { componentId, title } = Astro.props;
+---
+<div class="bg-[#0F172A] border border-white/10 rounded-lg p-5 flex flex-col justify-between" data-gate-id={componentId}>
+  <div>
+    <div class="flex items-center justify-between mb-3 font-mono text-xs">
+      <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/5">
+        SIMULATION
+      </span>
+      <span class="text-[#4CD7F6] font-bold uppercase">{componentId}</span>
+    </div>
+
+    <h3 class="text-lg font-bold text-white mb-4">{title}</h3>
+
+    <!-- Interactive Toggles -->
+    <div class="flex items-center gap-4 mb-4">
+      {componentId === 'rs-nor-latch' ? (
+        <>
+          <button data-input="s" class="gate-btn bg-slate-800 border border-white/10 text-xs font-mono px-3 py-1.5 rounded text-slate-300">
+            SET (S): <span class="val font-bold text-slate-500">0</span>
+          </button>
+          <button data-input="r" class="gate-btn bg-slate-800 border border-white/10 text-xs font-mono px-3 py-1.5 rounded text-slate-300">
+            RESET (R): <span class="val font-bold text-slate-500">0</span>
+          </button>
+        </>
+      ) : (
+        <>
+          <button data-input="a" class="gate-btn bg-slate-800 border border-white/10 text-xs font-mono px-3 py-1.5 rounded text-slate-300">
+            INPUT A: <span class="val font-bold text-slate-500">0</span>
+          </button>
+          <button data-input="b" class="gate-btn bg-slate-800 border border-white/10 text-xs font-mono px-3 py-1.5 rounded text-slate-300">
+            INPUT B: <span class="val font-bold text-slate-500">0</span>
+          </button>
+        </>
+      )}
+    </div>
+
+    <!-- Live Readout Canvas -->
+    <div class="p-4 bg-[#090D16] rounded border border-white/5 font-mono text-xs space-y-2">
+      <div class="flex justify-between">
+        <span class="text-slate-400">OUTPUT:</span>
+        <span class="output-val text-slate-500 font-bold">UNEVALUATED</span>
+      </div>
+      <div class="flex justify-between">
+        <span class="text-slate-400">LATENCY:</span>
+        <span class="timing-val text-[#FFB95F]">0ms (0 ticks)</span>
+      </div>
+      <div class="flex justify-between state-container hidden">
+        <span class="text-slate-400">LATCH STATE:</span>
+        <span class="state-val text-[#4CD7F6]">HOLD</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { simulateComponent, type SimulateRequest } from '../lib/api';
+
+  document.querySelectorAll('[data-gate-id]').forEach((card) => {
+    const componentId = card.getAttribute('data-gate-id') as 'and-gate' | 'xor-gate' | 'rs-nor-latch';
+    const buttons = card.querySelectorAll<HTMLButtonElement>('.gate-btn');
+    const outputVal = card.querySelector('.output-val');
+    const timingVal = card.querySelector('.timing-val');
+    const stateContainer = card.querySelector('.state-container');
+    const stateVal = card.querySelector('.state-val');
+
+    const inputs: Record<string, 0 | 1> = { a: 0, b: 0, s: 0, r: 0 };
+    let prevQ: 0 | 1 = 0;
+
+    async function runSimulation() {
+      const payload: SimulateRequest = componentId === 'rs-nor-latch'
+        ? {
+            componentId: 'rs-nor-latch',
+            inputs: { s: inputs.s, r: inputs.r },
+            prevInputs: { q: prevQ }
+          }
+        : {
+            componentId,
+            inputs: { a: inputs.a, b: inputs.b }
+          };
+
+      const res = await simulateComponent(payload);
+
+      if (res.status === 'success' && res.data) {
+        const { evaluation, timing } = res.data;
+
+        // Render Timing
+        if (timingVal) {
+          timingVal.textContent = `${timing.latencyMs}ms (${timing.redstoneTicks} RS Ticks / ${timing.gameTicks} Game Ticks)`;
+        }
+
+        // Render Outputs
+        if (typeof evaluation === 'number') {
+          if (outputVal) {
+            outputVal.textContent = evaluation === 1 ? '1 (HIGH)' : '0 (LOW)';
+            outputVal.className = evaluation === 1 ? 'output-val text-[#EF4444] font-bold' : 'output-val text-slate-500 font-bold';
+          }
+        } else if (typeof evaluation === 'object') {
+          if (outputVal) {
+            outputVal.textContent = `Q: ${evaluation.outputs?.q ?? 0} | qBar: ${evaluation.outputs?.qBar ?? 0}`;
+            outputVal.className = 'output-val text-[#EF4444] font-bold';
+          }
+          if (stateContainer && stateVal && evaluation.state) {
+            stateContainer.classList.remove('hidden');
+            stateVal.textContent = evaluation.state;
+          }
+          if (evaluation.outputs?.q !== undefined) {
+            prevQ = evaluation.outputs.q;
+          }
+        }
+      }
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-input')!;
+        inputs[key] = inputs[key] === 1 ? 0 : 1;
+
+        const valSpan = btn.querySelector('.val');
+        if (valSpan) {
+          valSpan.textContent = String(inputs[key]);
+          valSpan.className = inputs[key] === 1 ? 'val font-bold text-[#EF4444]' : 'val font-bold text-slate-500';
+        }
+
+        runSimulation();
+      });
+    });
+
+    // Initial run
+    runSimulation();
+  });
+</script>

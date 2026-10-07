@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import RedstoneToolbelt from '../components/RedstoneToolbelt.astro';
+import InteractiveGate from '../components/InteractiveGate.astro';
+---
+
+<Layout>
+  <Header app="compendium" />
+  
+  <div class="flex flex-col lg:flex-row min-h-[calc(100vh-65px)]">
+    <main class="flex-1 p-6 bg-[#090D16]">
+      <h2 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider mb-4">
+        // LIVE API GATE EVALUATION ENGINE
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <InteractiveGate componentId="and-gate" title="AND Gate Circuit" />
+        <InteractiveGate componentId="xor-gate" title="XOR Gate Circuit" />
+        <InteractiveGate componentId="rs-nor-latch" title="RS-NOR Latch Memory" />
+      </div>
+    </main>
+  </div>
+</Layout>

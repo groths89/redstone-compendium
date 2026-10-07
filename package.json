@@ -1,0 +1,12 @@
+{
+  "name": "redstone-compendium-monorepo",
+  "private": true,
+  "scripts": {
+    "build": "cd web && npm run build",
+    "deploy:staging": "npm run build && wrangler deploy --env staging",
+    "deploy:prod": "npm run build && wrangler deploy --env production"
+  },
+  "dependencies": {
+    "serverless-http": "^4.0.0"
+  }
+}

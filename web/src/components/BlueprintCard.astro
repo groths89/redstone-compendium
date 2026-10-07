@@ -1,0 +1,52 @@
+---
+interface Props {
+  title: string;
+  category: string;
+  parity: string;
+  description: string;
+  ingredients: { name: string; count: number }[];
+  ticks: number;
+}
+
+const { title, category, parity, description, ingredients, ticks } = Astro.props;
+---
+
+<div class="bg-[#0F172A] border border-white/10 hover:border-slate-600 rounded-lg p-5 flex flex-col justify-between transition-all duration-200 group">
+  <div>
+    <!-- Card Header Badges -->
+    <div class="flex items-center justify-between mb-3 text-xs font-mono">
+      <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-white/5">
+        {category}
+      </span>
+      <span class="text-[#FF5451] flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#EF4444]"></span>
+        {parity}
+      </span>
+    </div>
+
+    <h3 class="text-lg font-bold text-white group-hover:text-[#4CD7F6] transition-colors mb-2">
+      {title}
+    </h3>
+    <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+      {description}
+    </p>
+
+    <!-- Schematic Canvas Placeholder -->
+    <div class="h-36 bg-[#090D16] rounded border border-white/5 mb-4 flex items-center justify-center relative overflow-hidden">
+      <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:16px_16px] opacity-40"></div>
+      <span class="font-mono text-xs text-slate-600 z-10">// SVG SCHEMATIC CANVAS</span>
+    </div>
+  </div>
+
+  <!-- Footer Specs & Actions -->
+  <div>
+    <div class="flex items-center justify-between text-xs font-mono text-slate-400 pt-3 border-t border-white/5 mb-4">
+      <span>LATENCY: <strong class="text-[#FFB95F]">{ticks} Ticks</strong></span>
+      <span>ITEMS: <strong class="text-white">{ingredients.reduce((acc, item) => acc + item.count, 0)}</strong></span>
+    </div>
+
+    <button class="w-full py-2 px-3 rounded bg-[#1E293B] hover:bg-[#334155] border border-white/10 text-xs font-mono font-semibold text-slate-200 hover:text-white transition-colors">
+      COPY /PLACE COMMAND
+    </button>
+  </div>
+</div>

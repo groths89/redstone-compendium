@@ -1,0 +1,53 @@
+---
+const survivalRules = [
+  { term: "Max Distance", detail: "15 blocks attenuation without repeaters." },
+  { term: "Torch Delay", detail: "1 redstone tick (0.1s / 2 game ticks)." },
+  { term: "Soft vs Hard", detail: "Soft powers wire; Hard powers solid blocks." }
+];
+---
+
+<aside class="w-full lg:w-[280px] shrink-0 bg-[#0F172A] border-r border-white/10 p-5 flex flex-col gap-6">
+  <div>
+    <h2 class="text-xs font-mono font-bold tracking-wider text-slate-400 uppercase mb-3">
+      // SURVIVAL MECHANICS
+    </h2>
+    <ul class="space-y-3 text-xs">
+      {survivalRules.map(rule => (
+        <li class="p-3 rounded bg-[#1E293B] border border-white/5">
+          <span class="font-mono text-[#4CD7F6] font-semibold block mb-1">{rule.term}</span>
+          <span class="text-slate-300 leading-relaxed">{rule.detail}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+
+  <div class="p-4 rounded bg-[#1E293B] border border-white/5 flex flex-col gap-3">
+    <div class="flex items-center justify-between text-xs font-mono">
+      <span class="text-slate-400">SIGNAL LEVEL</span>
+      <span id="signal-value" class="text-[#EF4444] font-bold">15</span>
+    </div>
+    <input 
+      type="range" 
+      min="0" 
+      max="15" 
+      value="15" 
+      id="signal-slider" 
+      class="w-full accent-[#EF4444] cursor-pointer"
+    />
+    <div class="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+      <div id="signal-bar" class="h-full bg-[#EF4444] glow-red w-full transition-all duration-150"></div>
+    </div>
+  </div>
+</aside>
+
+<script>
+  const slider = document.getElementById('signal-slider') as HTMLInputElement;
+  const valueDisplay = document.getElementById('signal-value');
+  const bar = document.getElementById('signal-bar');
+
+  slider?.addEventListener('input', (e) => {
+    const val = (e.target as HTMLInputElement).value;
+    if (valueDisplay) valueDisplay.textContent = val;
+    if (bar) bar.style.width = `${(parseInt(val) / 15) * 100}%`;
+  });
+</script>

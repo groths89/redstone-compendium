@@ -1,0 +1,150 @@
+name: Redstone Suite CI/CD & Live Test Reports
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==========================================
+  # JOB 1: TEST SUITE & REPORT GENERATION
+  # ==========================================
+  test:
+    name: Run Test Suite & Generate Reports
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: |
+            api/package-lock.json
+            web/package-lock.json
+
+      # API Vitest & Supertest
+      - name: Install API Dependencies
+        run: npm ci
+        working-directory: ./api
+
+      - name: Run API Tests
+        run: npm run test:ci
+        working-directory: ./api
+
+      # Web Playwright E2E
+      - name: Install Web Dependencies
+        run: npm ci
+        working-directory: ./web
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+        working-directory: ./web
+
+      - name: Run Playwright E2E Tests
+        run: npx playwright test
+        working-directory: ./web
+
+      # Consolidate HTML Test Reports for Pages
+      - name: Prepare Combined Test Report Site
+        if: always()
+        run: |
+          mkdir -p public-reports
+          if [ -d "web/playwright-report" ]; then cp -r web/playwright-report/* public-reports/; fi
+          mkdir -p public-reports/unit-integration
+          if [ -d "api/test-report" ]; then cp -r api/test-report/* public-reports/unit-integration/; fi
+
+      - name: Upload Report Artifacts
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public-reports/
+
+  # ==========================================
+  # JOB 2: PUBLISH LIVE REPORTS TO GITHUB PAGES
+  # ==========================================
+  deploy-reports:
+    name: Publish Live Test Reports to Web
+    needs: test
+    if: always()
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Reports to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ==========================================
+  # JOB 3: DEPLOY TO CLOUDFLARE WORKERS (STAGING)
+  # ==========================================
+  deploy-staging:
+    name: Deploy Single Worker (Staging)
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Build Web Application
+        run: cd web && npm ci && npm run build
+
+      - name: Deploy Single Worker to Cloudflare (Staging)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env staging
+
+  # ==========================================
+  # JOB 4: DEPLOY TO CLOUDFLARE WORKERS (PRODUCTION)
+  # ==========================================
+  deploy-production:
+    name: Deploy Single Worker (Production)
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Build Web Application
+        run: cd web && npm ci && npm run build
+
+      - name: Deploy Single Worker to Cloudflare (Production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --env production
