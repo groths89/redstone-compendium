@@ -1,1 +1,32 @@
+# Dependencies (Root & Sub-packages)
 node_modules/
+**/node_modules/
+
+# Build & Output Directories
+dist/
+**/dist/
+.astro/
+**/out/
+
+# Environment Files
+.env
+.env.*
+!.env.example
+
+# Test Reports & Coverage
+test-report/
+**/test-report/
+playwright-report/
+**/playwright-report/
+blob-report/
+test-results/
+
+# Cloudflare / Wrangler
+.wrangler/
+**/.wrangler/
+
+# OS / Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
