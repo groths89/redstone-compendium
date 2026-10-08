@@ -91,7 +91,7 @@ jobs:
         uses: actions/deploy-pages@v4
 
   # ==========================================
-  # JOB 3: DEPLOY TO CLOUDFLARE WORKERS (STAGING)
+  # JOB 3: DEPLOY TO STAGING
   # ==========================================
   deploy-staging:
     name: Deploy Single Worker (Staging)
@@ -109,19 +109,27 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
+          cache-dependency-path: |
+            api/package-lock.json
+            web/package-lock.json
 
-      - name: Build Web Application
-        run: cd web && npm ci && npm run build
+      - name: Install Monorepo Dependencies
+        run: |
+          cd api && npm ci
+          cd ../web && npm ci
 
-      - name: Deploy Single Worker to Cloudflare (Staging)
+      - name: Build Astro Web Bundle
+        run: cd web && npm run build
+
+      - name: Deploy Worker to Cloudflare (Staging)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --env staging
+          command: deploy --config wrangler.jsonc --env staging
 
   # ==========================================
-  # JOB 4: DEPLOY TO CLOUDFLARE WORKERS (PRODUCTION)
+  # JOB 4: DEPLOY TO PRODUCTION
   # ==========================================
   deploy-production:
     name: Deploy Single Worker (Production)
@@ -143,12 +151,17 @@ jobs:
             api/package-lock.json
             web/package-lock.json
 
-      - name: Build Web Application
-        run: cd web && npm ci && npm run build
+      - name: Install Monorepo Dependencies
+        run: |
+          cd api && npm ci
+          cd ../web && npm ci
 
-      - name: Deploy Single Worker to Cloudflare (Production)
+      - name: Build Astro Web Bundle
+        run: cd web && npm run build
+
+      - name: Deploy Worker to Cloudflare (Production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --env production
+          command: deploy --config wrangler.jsonc --env production
