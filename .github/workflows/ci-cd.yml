@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: |
             api/package-lock.json
@@ -79,7 +79,8 @@ jobs:
   deploy-reports:
     name: Publish Live Test Reports to Web
     needs: test
-    if: always()
+    # Only deploy live reports on pushes/merges to main or staging (skips PR preview builds)
+    if: always() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -106,7 +107,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
 
       - name: Build Web Application
@@ -136,8 +137,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
+          cache-dependency-path: |
+            api/package-lock.json
+            web/package-lock.json
 
       - name: Build Web Application
         run: cd web && npm ci && npm run build

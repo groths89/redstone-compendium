@@ -26,3 +26,11 @@ Whether you're mapping out complex digital logic circuits in Redstone or debuggi
 
 ### **Testing & Quality Assurance**
 - **End-to-End Testing:** Playwright (automated browser verification of interactive circuit components and state UI)
+
+## 🛠️ Development & Branching Strategy
+
+We follow a strict branching model enforced by GitHub Actions CI/CD pipelines:
+* `main` — Production environment (deploys to Cloudflare Workers Prod)
+* `staging` — Staging environment (deploys to Cloudflare Workers Staging)
+
+For details on branch prefixes (`feature/*`, `fix/*`, `hotfix/*`, `chore/*`), see our [Contributing Guidelines](./CONTRIBUTING.md).

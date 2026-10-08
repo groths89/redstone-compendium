@@ -11,7 +11,13 @@
     "test:watch": "vitest",
     "test:ci": "vitest run --reporter=html --outputFile=test-report/index.html"
   },
-  "keywords": ["minecraft", "redstone", "express", "typescript", "logic-engine"],
+  "keywords": [
+    "minecraft",
+    "redstone",
+    "express",
+    "typescript",
+    "logic-engine"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
@@ -25,6 +31,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^20.12.0",
     "@types/supertest": "^6.0.2",
+    "@vitest/ui": "^1.6.1",
     "supertest": "^7.0.0",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3",
