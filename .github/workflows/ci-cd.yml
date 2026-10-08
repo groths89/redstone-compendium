@@ -79,7 +79,8 @@ jobs:
   deploy-reports:
     name: Publish Live Test Reports to Web
     needs: test
-    if: always()
+    # Only deploy live reports on pushes/merges to main or staging (skips PR preview builds)
+    if: always() && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
     environment:
       name: github-pages
