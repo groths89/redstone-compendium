@@ -4,7 +4,7 @@ import { app } from './api/src/app';
 
 // Import Astro's built worker bundle generated during `astro build`
 // @ts-ignore
-import astroHandler from './web/dist/_worker.js/index.js';
+import astroHandler from './web/dist/server/entry.mjs';
 
 // Wrap the standalone Express app
 const expressHandler: any = serverless(app);
