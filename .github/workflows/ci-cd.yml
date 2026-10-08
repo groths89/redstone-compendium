@@ -31,10 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: |
-            api/package-lock.json
-            web/package-lock.json
 
       # API Vitest & Supertest
       - name: Install API Dependencies
@@ -118,14 +114,18 @@ jobs:
           cd api && npm ci
           cd ../web && npm ci
 
-      - name: Build Astro Web Bundle
+      - name: Build Web Application
         run: cd web && npm run build
+
+      - name: Verify Web Output Directory
+        run: ls -la web/dist
 
       - name: Deploy Worker to Cloudflare (Staging)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
           command: deploy --config wrangler.jsonc --env staging
 
   # ==========================================
@@ -156,12 +156,16 @@ jobs:
           cd api && npm ci
           cd ../web && npm ci
 
-      - name: Build Astro Web Bundle
+      - name: Build Web Application
         run: cd web && npm run build
+
+      - name: Verify Web Output Directory
+        run: ls -la web/dist
 
       - name: Deploy Worker to Cloudflare (Production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
           command: deploy --config wrangler.jsonc --env production
