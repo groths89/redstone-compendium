@@ -76,9 +76,10 @@ export default defineConfig({
   /* Automatically launch Astro dev server and Express API before running tests */
   webServer: [
     {
-      command: 'npm run start:api', // Command to spin up Express server
-      url: 'http://localhost:4000/api/v1/health',
+      command: 'npm --prefix ../api run dev', // or 'npm --prefix ../api run start' depending on api/package.json
+      url: 'http://localhost:4000/api/v1/health', // matches your /api/v1/health endpoint
       reuseExistingServer: !process.env.CI,
+      timeout: 120 * 1000,
     },
     {
       command: 'npm run dev', // Command to spin up Astro dev server
