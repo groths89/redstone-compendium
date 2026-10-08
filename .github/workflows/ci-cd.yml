@@ -118,8 +118,11 @@ jobs:
           cd api && npm ci
           cd ../web && npm ci
 
-      - name: Build Astro Web Bundle
+      - name: Build Web Application
         run: cd web && npm run build
+
+      - name: Verify Web Output Directory
+        run: ls -la web/dist
 
       - name: Deploy Worker to Cloudflare (Staging)
         uses: cloudflare/wrangler-action@v3
@@ -156,8 +159,11 @@ jobs:
           cd api && npm ci
           cd ../web && npm ci
 
-      - name: Build Astro Web Bundle
+      - name: Build Web Application
         run: cd web && npm run build
+
+      - name: Verify Web Output Directory
+        run: ls -la web/dist
 
       - name: Deploy Worker to Cloudflare (Production)
         uses: cloudflare/wrangler-action@v3
