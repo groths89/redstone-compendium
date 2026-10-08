@@ -31,10 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: |
-            api/package-lock.json
-            web/package-lock.json
 
       # API Vitest & Supertest
       - name: Install API Dependencies
